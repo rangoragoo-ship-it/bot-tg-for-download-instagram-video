@@ -8,7 +8,6 @@ import yt_dlp
 
 logging.basicConfig(level=logging.INFO)
 
-
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 bot = Bot(token=BOT_TOKEN)
@@ -34,42 +33,42 @@ def download_video_sync(url: str) -> str:
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     text = (
-        "Hi! I am a video downloader bot.\n"
-        "Send me a link from Instagram, TikTok or YouTube!"
+        "Привет! 👋\n"
+        "Я бот для скачивания видео.\n"
+        "Просто отправь ссылку на видео из Instagram, TikTok или YouTube! 🎬"
     )
     await message.answer(text)
 
 @router.message(F.text.startswith('http'))
 async def handle_link(message: Message):
     url = message.text.strip()
-    await message.answer("Downloading... Please wait.")
     
     try:
         loop = asyncio.get_running_loop()
         file_path = await loop.run_in_executor(None, download_video_sync, url)
         
         if not os.path.exists(file_path):
-            raise FileNotFoundError("File not downloaded.")
+            raise FileNotFoundError("Файл не был скачан.")
 
         file_size = os.path.getsize(file_path)
         if file_size > 50 * 1024 * 1024:
-            await message.answer("Video is larger than 50 MB. Telegram limit.")
+            await message.answer("⚠️ Видео больше 50 МБ — Telegram не пропустит.")
             os.remove(file_path)
             return
 
         video_file = FSInputFile(file_path)
-        await message.answer_video(video=video_file, caption="Here is your video!")
+        await message.answer_video(video=video_file, caption="🎥 Готово!")
         
     except Exception as e:
         error_msg = str(e)
-        await message.answer(f"Error: {error_msg[:200]}")
+        await message.answer(f"❌ Ошибка: {error_msg[:200]}")
     finally:
         if 'file_path' in locals() and os.path.exists(file_path):
             os.remove(file_path)
 
 @router.message()
 async def handle_invalid(message: Message):
-    await message.answer("Please send a valid link starting with http:// or https://")
+    await message.answer("Отправь ссылку на видео (начинается с http:// или https://)")
 
 async def main():
     await bot.delete_webhook(drop_pending_updates=True)
