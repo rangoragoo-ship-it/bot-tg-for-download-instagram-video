@@ -20,11 +20,17 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 def download_video_sync(url: str) -> str:
     ydl_opts = {
-        'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
+        # Сначала пробуем лучшее видео с аудио вместе, потом отдельно
+        'format': 'bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4][height<=720]/best',
         'outtmpl': f'{DOWNLOAD_DIR}/%(id)s.%(ext)s',
         'merge_output_format': 'mp4',
         'noplaylist': True,
         'quiet': True,
+        # Принудительно скачиваем аудио
+        'postprocessors': [{
+            'key': 'FFmpegVideoConvertor',
+            'preferedformat': 'mp4',
+        }],
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -57,7 +63,8 @@ async def handle_link(message: Message):
             return
 
         video_file = FSInputFile(file_path)
-        await message.answer_video(video=video_file, caption="🎥 Готово!")
+        # Отправляем БЕЗ подписи (caption убран)
+        await message.answer_video(video=video_file)
         
     except Exception as e:
         error_msg = str(e)
