@@ -8,7 +8,7 @@ import yt_dlp
 
 logging.basicConfig(level=logging.INFO)
 
-import os
+
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 bot = Bot(token=BOT_TOKEN)
