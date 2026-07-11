@@ -20,13 +20,14 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 def download_video_sync(url: str) -> str:
     ydl_opts = {
-        # Сначала пробуем лучшее видео с аудио вместе, потом отдельно
-        'format': 'bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4][height<=720]/best',
+        # Для YouTube: лучшее видео + лучшее аудио, склеиваем в mp4
+        # Для TikTok/Insta: просто лучшее качество
+        'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
         'outtmpl': f'{DOWNLOAD_DIR}/%(id)s.%(ext)s',
         'merge_output_format': 'mp4',
         'noplaylist': True,
         'quiet': True,
-        # Принудительно скачиваем аудио
+        # Принудительное склеивание через FFmpeg
         'postprocessors': [{
             'key': 'FFmpegVideoConvertor',
             'preferedformat': 'mp4',
